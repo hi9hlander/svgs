@@ -1,7 +1,7 @@
 from panda3d.core import *
 from direct.interval.IntervalGlobal import *
-from odvm.renderer import Renderer
-from odvm.optimizedvm import OptimizedVM
+from lib.odvm.renderer import Renderer
+from lib.odvm.optimizedvm import OptimizedVM
 from random import randrange
 import cProfile
 import pstats
