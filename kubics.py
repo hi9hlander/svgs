@@ -302,6 +302,10 @@ class Kubics(Renderer):
                self.model.set_opt_level(1)
          self.select_kubics(randrange(len(Kubics.kubics)))
          if not self.check_fit( self.ki, self.kj ):
+            self.model.set_opt_level(2)
+            self.model.compact(3)
+            self.model.optimize()
+            self.model.set_opt_level(1)
             self.toggle_wireframe()
             self.seq_down.finish()
          else:
