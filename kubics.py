@@ -218,16 +218,14 @@ class Kubics(Renderer):
    def draw_kubics(self):
       i = self.ki-(self.di>>1)
       j = self.kj-(self.dj>>1)+1
-      with self.model.quads:
-         for p in self.kpoints: self.model.add(0,i+(p[0]>>1),j+(p[1]>>1),0,self.kcolor)
-         self.model.optimize()
+      with self.model.optimized() as m:
+         for p in self.kpoints: m.add(0,i+(p[0]>>1),j+(p[1]>>1),0,self.kcolor)
 
    def erase_kubics(self):
       i = self.ki-(self.di>>1)
       j = self.kj-(self.dj>>1)+1
-      with self.model.quads:
-         for p in self.kpoints: self.model.sub(0,i+(p[0]>>1),j+(p[1]>>1),0)
-         self.model.optimize()
+      with self.model.optimized() as m:
+         for p in self.kpoints: m.sub(0,i+(p[0]>>1),j+(p[1]>>1),0)
 
    def check_fit( self, ki, kj, si=0, sj=0 ):
       for p in self.kpoints:
@@ -242,7 +240,7 @@ class Kubics(Renderer):
 
    def rotate_left(self):
       if not self.check_fit( self.ki, self.kj, -1,1 ): return False
-      with self.model.quads:
+      with self.model.optimized():
          self.erase_kubics()
          self.rotate_kubics(-1,1)
          self.draw_kubics()
@@ -250,7 +248,7 @@ class Kubics(Renderer):
 
    def rotate_right(self):
       if not self.check_fit( self.ki, self.kj, 1,-1 ): return False
-      with self.model.quads:
+      with self.model.optimized():
          self.erase_kubics()
          self.rotate_kubics(1,-1)
          self.draw_kubics()
@@ -258,7 +256,7 @@ class Kubics(Renderer):
 
    def move_left(self):
       if not self.check_fit( self.ki-1, self.kj ): return False
-      with self.model.quads:
+      with self.model.optimized():
          self.erase_kubics()
          self.ki -= 1
          self.draw_kubics()
@@ -266,7 +264,7 @@ class Kubics(Renderer):
 
    def move_right(self):
       if not self.check_fit( self.ki+1, self.kj ): return False
-      with self.model.quads:
+      with self.model.optimized():
          self.erase_kubics()
          self.ki += 1
          self.draw_kubics()
@@ -289,30 +287,23 @@ class Kubics(Renderer):
                for i in range(len(self.field[-1])): self.field[-1][i] = -1
                rebuild_rqrd = True
          if rebuild_rqrd:
-            with self.model.quads:
-               self.model.set_opt_level(2)
+            with self.model.optimized(2,3) as m:
                for kj in range(len(self.field)):
                   for ki in range(len(self.field[kj])):
                      i = ki-(self.di>>1)
                      j = kj-(self.dj>>1)+1
-                     self.model.sub(0,i,j,0)
+                     m.sub(0,i,j,0)
                      kidx = self.field[kj][ki]
-                     if kidx != -1: self.model.add(0,i,j,0,Kubics.kubics[kidx][0])
-               self.model.optimize()
-               self.model.set_opt_level(1)
+                     if kidx != -1: m.add(0,i,j,0,Kubics.kubics[kidx][0])
          self.select_kubics(randrange(len(Kubics.kubics)))
          if not self.check_fit( self.ki, self.kj ):
-            self.model.set_opt_level(2)
-            self.model.compact(3)
-            self.model.optimize()
-            self.model.set_opt_level(1)
             self.toggle_wireframe()
             self.seq_down.finish()
          else:
             self.draw_kubics()
             self.seq_down.loop(0.0,-1.0,1.0)
          return False
-      with self.model.quads:
+      with self.model.optimized():
          self.erase_kubics()
          self.kj -= 1
          self.draw_kubics()
